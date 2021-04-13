@@ -9,8 +9,60 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
 </head>
 <body>
-    <div>欢迎你：<span></span></span></div>
-    <img src="./imahes/ylj.png" />
+    <div class="main">
+        <img class="img" src="./imahes/ylj.png" />
+        <div>万户侯</div>
+    </div>
+    <div class="list">
+        <ul>
+            {list}
+        </ul>
+    </div>
+    <table>
+        <tr>
+            <td>姓名</td>
+            <td><input type="text" id="username"></td>
+        </tr>
+        <tr>
+            <td>密码</td>
+            <td><input type="text" id="pass"></td>
+        </tr>
+        <tr>
+            <td colspan="2"><button onclick="gogo()">提交</button></td>
+        </tr>
+    </table>
 </body>
-<script src="./js/index.js"></script>
+<script src="./js/Ajax.js"></script>
+<script>
+    function doss(){
+        $.ajax({
+             type: "GET",
+             url: "/api/login",
+             data: {username:$("#username").val(), content:$("#pass").val()},
+             dataType: "json",
+             success: function(data){
+                debugger
+            }
+        });
+    }
+    function gogo(){
+        var data = {
+                name:$("#username").val,
+                pass:$("#pass").val
+            }
+        ajax({
+            method:'get',
+            url:`/api/login?name=4&pass=4`,
+            async:false,
+            success:function(res,header){
+                console.log(res);
+            },
+            fail:function(res,header){
+                //console.log(res);
+            }
+        })
+    }
+    
+</script>
+<!-- <script src="./js/index.js"></script> -->
 </html>
