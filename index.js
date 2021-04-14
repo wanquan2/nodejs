@@ -1,7 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const urljs = require("url");
-const util = require('util');
+const querystring = require("querystring");
 
 const writeHeads = {
     'Content-Type': 'text/html;charset=utf-8',
@@ -36,17 +36,13 @@ serve.on("request",function(request,response){
             response.end(html)
         })
     } else if(url.indexOf('/api/') > -1){//接口前缀
-        const parm = util.inspect(urljs.parse(url, true)).Url;
-        console.log(request);
-        console.log('----------------------------------------------------------');
-        console.log(parm);
-        // console.log(parm.query);
-        // console.log(parm.pathname);
-
+        let parmurl = new urljs.URL(`http://localhost:8080${url}`);
+        let parm = querystring.parse(parmurl.search.replace("?",""));
         response.writeHead(200,{'Content-Type':'pplication/json;charset=UTF-8'})
         response.end(JSON.stringify({
             code:200,
-            list:list
+            list:list,
+            request:parm
         }))
     } else if(url){ //静态资源
         fs.readFile(`./web${url}`,function(err,data){
