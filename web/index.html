@@ -11,7 +11,7 @@
 <body>
     <div class="main">
         <img class="img" src="./imahes/ylj.png" />
-        <div>万户侯</div>
+        <div id="idname"></div>
     </div>
     <div class="list">
         <ul>
@@ -28,34 +28,41 @@
             <td><input type="text" id="pass"></td>
         </tr>
         <tr>
-            <td colspan="2"><button onclick="gogo()">提交</button></td>
+            <td colspan="2"><button onclick="doss()">提交</button></td>
         </tr>
     </table>
 </body>
 <script src="./js/Ajax.js"></script>
 <script>
     function doss(){
+        var data = {
+            name:$("#username").val(),
+            pass:$("#pass").val()
+        }
         $.ajax({
              type: "GET",
-             url: "/api/login",
-             data: {username:$("#username").val(), content:$("#pass").val()},
+             url:`/api/login?name=${data.name}&pass=${data.pass}`,
              dataType: "json",
-             success: function(data){
+             success: function(res){
+                console.log(res);
                 debugger
+                $("#idname").text(res.request.name)
             }
         });
     }
     function gogo(){
         var data = {
-                name:$("#username").val,
-                pass:$("#pass").val
+                name:$("#username").val(),
+                pass:$("#pass").val()
             }
         ajax({
             method:'get',
-            url:`/api/login?name=4&pass=4`,
+            url:`/api/login?name=${data.name}&pass=${data.pass}`,
             async:false,
             success:function(res,header){
                 console.log(res);
+                debugger
+                $("#idname").text(res.request.name)
             },
             fail:function(res,header){
                 //console.log(res);
