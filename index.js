@@ -7,6 +7,9 @@ const writeHeads = {
     'Content-Type': 'text/html;charset=utf-8',
     'token':'wwwwwww-11111'
 }
+
+let SESSION = '';
+
 let list = [{
     id:1,
     name:"卫青",
@@ -36,16 +39,53 @@ serve.on("request",function(request,response){
             response.end(html)
         })
     } else if(url.indexOf('/api/') > -1){//接口前缀
-        let parmurl = new urljs.URL(`http://localhost:8080${url}`);
-        let parm = querystring.parse(parmurl.search.replace("?",""));
-        response.writeHead(200,{'Content-Type':'pplication/json;charset=UTF-8'})
-        response.end(JSON.stringify({
-            code:200,
-            list:list,
-            request:parm
-        }))
+        let parm = {};
+        
+        if(url == '/api/login'){
+            SESSION = 1111111;
+            response.setHeader('Set-Cookie', `userid=${SESSION}; path=/; httpOnly; expires=2021-04-16;`);//设置客户端cookie
+            //userId：用户识别标识，path=/：表示该cookie在所有路径下均有效，httpOnly：表示限制客户端操作，expire：表示过期时间不设为永久有效
+        }else{
+            let cookie = request.headers.cookie;
+            if(!cookie || cookie.split('=')[1] != SESSION){
+                response.end(JSON.stringify({
+                    code:500,
+                    msg:"您未登录"
+                }))
+                return
+            }
+            //console.log(request.headers.cookie)
+        }
+        
+        response.writeHead(200,{'Content-Type':'pplication/json;charset=UTF-8'});
+
+        if(method == 'GET'){
+            let parmurl = new urljs.URL(`${request.headers.referer + url}`);
+            parm = querystring.parse(parmurl.search.replace("?",""));
+            response.end(JSON.stringify({
+                code:200,
+                list:list,
+                request:parm
+            }))
+        }else if(method == 'POST'){
+            let body = '';
+            request.on('data',function(postdata){
+                body += postdata;
+                console.log(body);
+                parm = querystring.parse(body);
+                response.end(JSON.stringify({
+                    code:200,
+                    list:list,
+                    request:parm
+                }))
+            })
+        }
+        
     } else if(url){ //静态资源
         fs.readFile(`./web${url}`,function(err,data){
+            if(url.lastIndexOf(".css") > -1){//设置css文件传输类型
+                response.writeHead(200,{'Content-Type':'text/css;charset=UTF-8'})
+            }
             response.end(data)
         })
     }

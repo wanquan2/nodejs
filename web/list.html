@@ -9,16 +9,7 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
 </head>
 <body>
-    <div class="main">
-        <img class="img" src="./imahes/ylj.png" />
-        <a id="idname" href="./list.html"></a>
-    </div>
-    <div class="list">
-        
-        <ul>
-            {list}
-        </ul>
-    </div>
+    <div class="welcemo" id="idname"></div>
     <table>
         <tr>
             <td>姓名</td>
@@ -41,35 +32,22 @@
             pass:$("#pass").val()
         }
         $.ajax({
-             type: "post",
-             url:`/api/login`,
+             type: "POST",
+             url:`/api/add`,
              dataType: "json",
              data:data,
              success: function(res){
                 console.log(res);
+                if(res.code != 200){
+                    alert(res.msg);
+                    location.href = '/';
+                    return
+                }
                 $("#idname").text(res.request.name);
             }
         });
     }
-    function gogo(){
-        var data = {
-                name:$("#username").val(),
-                pass:$("#pass").val()
-            }
-        ajax({
-            method:'get',
-            url:`/api/login?name=${data.name}&pass=${data.pass}`,
-            async:false,
-            success:function(res,header){
-                console.log(res);
-                debugger
-                $("#idname").text(res.request.name)
-            },
-            fail:function(res,header){
-                //console.log(res);
-            }
-        })
-    }
+    
     
 </script>
 <!-- <script src="./js/index.js"></script> -->
