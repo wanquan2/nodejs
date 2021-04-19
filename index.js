@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const urljs = require("url");
 const querystring = require("querystring");
+const mysql = require("mysql");
 
 const writeHeads = {
     'Content-Type': 'text/html;charset=utf-8',
@@ -22,6 +23,15 @@ let list = [{
 
 const serve = http.createServer();
 
+const connection = mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'123456',
+    port:'3306',
+    database:'onlyyou'
+    //charset:'utf8mb4--UTF-8Unicode',
+});
+
 serve.on("request",function(request,response){
     let url = request.url;
     let method = request.method;
@@ -40,21 +50,18 @@ serve.on("request",function(request,response){
         })
     } else if(url.indexOf('/api/') > -1){//接口前缀
         let parm = {};
+        let cookie = request.headers.cookie;
         
         if(url == '/api/login'){
             SESSION = 1111111;
             response.setHeader('Set-Cookie', `userid=${SESSION}; path=/; httpOnly; expires=2021-04-16;`);//设置客户端cookie
-            //userId：用户识别标识，path=/：表示该cookie在所有路径下均有效，httpOnly：表示限制客户端操作，expire：表示过期时间不设为永久有效
-        }else{
-            let cookie = request.headers.cookie;
-            if(!cookie || cookie.split('=')[1] != SESSION){
-                response.end(JSON.stringify({
-                    code:500,
-                    msg:"您未登录"
-                }))
-                return
-            }
-            //console.log(request.headers.cookie)
+            //userId：用户识别标识（自定义），path=/：表示该cookie在所有路径下均有效，httpOnly：表示限制客户端操作，expire：表示过期时间不设为永久有效
+        }else if(!cookie || cookie.split('=')[1] != SESSION){
+            response.end(JSON.stringify({
+                code:500,
+                msg:"您未登录"
+            }))
+            return
         }
         
         response.writeHead(200,{'Content-Type':'pplication/json;charset=UTF-8'});
@@ -73,11 +80,15 @@ serve.on("request",function(request,response){
                 body += postdata;
                 console.log(body);
                 parm = querystring.parse(body);
-                response.end(JSON.stringify({
-                    code:200,
-                    list:list,
-                    request:parm
-                }))
+                const sql = `SELECT * FROM u_userinfo`;
+                connection.query(sql,function(err,data){
+                    response.end(JSON.stringify({
+                        code:200,
+                        data:data,
+                        request:parm
+                    }))
+                })
+                
             })
         }
         
