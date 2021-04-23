@@ -8,16 +8,10 @@
     <link rel="stylesheet" href="./css/base.css">
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
 </head>
-<body>
+<body version={VERSION}>
     <div class="main">
         <img class="img" src="./imahes/ylj.png" />
         <a id="idname" href="./list.html"></a>
-    </div>
-    <div class="list">
-        
-        <ul>
-            {list}
-        </ul>
     </div>
     <table>
         <tr>
@@ -46,6 +40,10 @@
              dataType: "json",
              data:data,
              success: function(res){
+                 if(res.code != 200){
+                    alert('没有此账号');
+                    return
+                 }
                 console.log(res);
                 $("#idname").text(res.request.name);
             }

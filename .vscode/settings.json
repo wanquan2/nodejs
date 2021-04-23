@@ -1,4 +1,5 @@
 {
     "git.ignoreLimitWarning": true,
-    "editor.fontFamily": "Hack,YaHei Consolas Hybrid"
+    "editor.fontFamily": "Hack,YaHei Consolas Hybrid",
+    "editor.fontSize": 16
 }
