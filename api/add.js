@@ -2,33 +2,37 @@
 ** 添加
 */
 
-const querystring = require("querystring");
-const connection = require('../base/connect_database');
+const sqlfn = require('../base/base_sql');
+const getrequset = require('../base/base_request');
 
-module.exports = class add {
+module.exports = class login {
     constructor(request,response){
         this.req = request;
         this.res = response;
     }
 
-    ends(){
-        let parm = {};
-        this.req.on('data',(postdata) => {
-            parm = querystring.parse(postdata.toString());
-            let sql = `INSERT INTO u_userinfo(name) VALUES("${parm.name}")`;
-            connection.query(sql,(err,data) => {
-                let isErr = false;
-                if(err){
-                    isErr = true;
-                }
-                this.res.setHeader('Content-Type','pplication/json;charset=UTF-8');
-                this.res.end(JSON.stringify({
-                    code:isErr ? 500 : 200,
-                    msg:isErr ? '失败' : '成功',
-                    request:parm
-                }))
-            })
-        })
+    async ends(){
+        this.res.setHeader('Content-Type','pplication/json;charset=UTF-8');
+        let parm = await getrequset.post(this.req);
+        let isexist = await sqlfn.executesql(`SELECT * FROM u_userinfo WHERE name="${parm.name}"`);//查询是否已存在
+
+        if(isexist.data && isexist.data.length){
+            this.res.end(JSON.stringify({
+                code:500,
+                msg: `${isexist.data[0].name}已经存在，请勿重复添加`
+            }))
+            return
+        }
+        let sql = `INSERT INTO u_userinfo(username,name,sex,job,age) VALUES("${parm.username}","${parm.name}",${parm.sex*1},"${parm.job}",${parm.age*1})`;
+        let adddata = await sqlfn.executesql(sql);//添加
+        let list = await sqlfn.executesql(`SELECT * FROM u_userinfo`);//查询
+
+        this.res.end(JSON.stringify({
+            code:adddata.code,
+            msg: adddata.msg,
+            list:list.data,
+            request:parm
+        }))
     }
 }
 

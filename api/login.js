@@ -2,8 +2,8 @@
 ** 登录
 */
 
-const querystring = require("querystring");
-const connection = require('../base/connect_database');
+const sqlfn = require('../base/base_sql');
+const getrequset = require('../base/base_request');
 
 module.exports = class login {
     constructor(request,response){
@@ -11,32 +11,17 @@ module.exports = class login {
         this.res = response;
     }
 
-    getreqdata(){
-        this.req.on('data',(postdata) => {
-            parm = querystring.parse(postdata.toString());
-        })
-    }
-
-    ends(){
-        let parm = {};
-        this.req.on('data',(postdata) => {
-            parm = querystring.parse(postdata.toString());
-            let sql = `SELECT * FROM u_userinfo WHERE name="${parm.name}"`;
-            connection.query(sql,(err,data) => {
-                let isErr = false;
-                if(err || !data.length){
-                    isErr = true;
-                }
-                this.res.setHeader('Set-cookie',`userid=111;path=/;httpOnly;exprise=2021-04-25`);
-                this.res.setHeader('Content-Type','pplication/json;charset=UTF-8');
-                this.res.end(JSON.stringify({
-                    code:isErr ? 500 : 200,
-                    data:isErr ? undefined : data[0],
-                    msg:isErr ? '失败' : '成功',
-                    request:parm
-                }))
-            })
-        })
+    async ends(){
+        let parm = await getrequset.post(this.req);//获取接口参数
+        let datasql = await sqlfn.executesql(`SELECT * FROM u_userinfo WHERE name="${parm.name}"`);//执行sql语句
+        this.res.setHeader('Set-cookie',`userid=111;path=/;httpOnly;exprise=2021-04-25`);//设置cookie
+        this.res.setHeader('Content-Type','pplication/json;charset=UTF-8');
+        this.res.end(JSON.stringify({
+            code:datasql.code,
+            data:datasql.data[0],
+            msg: datasql.msg,
+            request:parm
+        }))
     }
 }
 

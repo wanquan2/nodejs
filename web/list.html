@@ -11,13 +11,40 @@
 <body>
     <div class="welcemo" id="idname"></div>
     <table>
+        <thead>
+            <tr>
+                <th>用户名</th>
+                <th>姓名</th>
+                <th>职务</th>
+                <th>年龄</th>
+                <th>性别</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="list">
+            
+        </tbody>
+    </table>
+    <table>
         <tr>
-            <td>姓名</td>
+            <td>用户名</td>
             <td><input type="text" id="username"></td>
         </tr>
         <tr>
-            <td>密码</td>
-            <td><input type="text" id="pass"></td>
+            <td>姓名</td>
+            <td><input type="text" id="names"></td>
+        </tr>
+        <tr>
+            <td>职务</td>
+            <td><input type="text" id="job"></td>
+        </tr>
+        <tr>
+            <td>年龄</td>
+            <td><input type="text" id="age"></td>
+        </tr>
+        <tr>
+            <td>性别</td>
+            <td><input type="text" id="sex"></td>
         </tr>
         <tr>
             <td colspan="2"><button onclick="doss()">提交</button></td>
@@ -28,8 +55,11 @@
 <script>
     function doss(){
         var data = {
-            name:$("#username").val(),
-            pass:$("#pass").val()
+            username:$("#username").val(),
+            name:$("#names").val(),
+            job:$("#job").val(),
+            age:$("#age").val(),
+            sex:$("#sex").val()
         }
         $.ajax({
              type: "POST",
@@ -40,10 +70,48 @@
                 console.log(res);
                 if(res.code != 200){
                     alert(res.msg);
-                    location.href = '/';
                     return
                 }
+                let list = '';
+                res.list.forEach(item => {
+                    list += `<tr>
+                        <td>${item.username}</td>
+                        <td>${item.name}</td>
+                        <td>${item.job}</td>
+                        <td>${item.age}</td>
+                        <td>${item.sex}</td>
+                        <td onclick="del(${item.id})">删除</td>
+                    </tr>`
+                })
+                $("#list").html(list);
                 $("#idname").text(res.request.name);
+            }
+        });
+    }
+
+    function del(id){
+        $.ajax({
+             type: "GET",
+             url:`/api/del?id=${id}`,
+             dataType: "json",
+             success: function(res){
+                console.log(res);
+                if(res.code != 200){
+                    alert(res.msg);
+                    return
+                }
+                let list = '';
+                res.list.forEach(item => {
+                    list += `<tr>
+                        <td>${item.username}</td>
+                        <td>${item.name}</td>
+                        <td>${item.job}</td>
+                        <td>${item.age}</td>
+                        <td>${item.sex}</td>
+                        <td onclick="del(${item.id})">删除</td>
+                    </tr>`
+                })
+                $("#list").html(list);
             }
         });
     }

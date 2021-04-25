@@ -4,26 +4,29 @@
 const static = require('../api/static');
 const login = require('../api/login');
 const add = require('../api/add');
+const del = require('../api/del');
 
 function router(request,response){
     let url = request.url;
-    let method = request.method;
     if(url.indexOf('/api') > -1){//接口请求
-        if(method == 'GET'){
-
-        }else if(method == 'POST'){
-            switch (url) {
-                case '/api/login':
-                    let loginAction = new login(request,response);
-                    loginAction.ends();
-                    break;
-                case '/api/add':
-                    let addAction = new add(request,response);
-                    addAction.ends();
-                    break;
-                default:
-                    break;
-            }
+        if(request.method == 'GET'){
+            url = url.split('?')[0];
+        }
+        switch (url) {
+            case '/api/login':
+                let loginAction = new login(request,response);
+                loginAction.ends();
+                break;
+            case '/api/add':
+                let addAction = new add(request,response);
+                addAction.ends();
+                break;
+            case '/api/del':
+                let delAction = new del(request,response);
+                delAction.ends();
+                break;
+            default:
+                break;
         }
         
     }else{//静态文件
