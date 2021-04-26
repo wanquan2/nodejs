@@ -1,6 +1,7 @@
 /*
 ** 路由管理
 */
+const notpath = require('../api/notpath')
 const static = require('../api/static');
 const login = require('../api/login');
 const add = require('../api/add');
@@ -25,7 +26,8 @@ function router(request,response){
                 let delAction = new del(request,response);
                 delAction.ends();
                 break;
-            default:
+            default://接口不存在
+                notpath(request,response);
                 break;
         }
         
