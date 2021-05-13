@@ -3,6 +3,7 @@
 */
 const baseConfig = {
     version:'',
+    rootDirectory:'',//根目录
     writeHeadsHtml:{
         'Content-Type': 'text/html;charset=utf-8',
         'token':'wwwwwww-11111'
