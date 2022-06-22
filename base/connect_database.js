@@ -21,4 +21,4 @@ connection.connect(function(err) {//判断数据库是否连接成功
 
 module.exports = connection;
 
-//exports.connection = connection; //注意module.exports抛出对象本身可以直接使用，exports[对象名]=内容对象 抛出的是模块函数
+//exports.connection = connection; //注意module.exports抛出对象本身可以直接使用，exports[对象名]=内容对象 抛出的是模块函数  

@@ -1,0 +1,494 @@
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script src="https://unpkg.com/vue@next"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="//unpkg.com/@element-plus/icons-vue"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <title>项目管理</title>
+    <style>
+        body,p{
+            padding: 0;
+            margin: 0;
+        }
+        p{
+            color: #f00;
+        }
+        .main{
+            padding: 20px;
+        }
+        .scrollbar{
+            height: 100vh;
+        }
+        .box-card{
+            margin-bottom: 20px;
+        }
+        .row,
+        .title{
+            display: flex;
+            flex-direction: row;
+        }
+        .title{
+            align-items: center;
+        }
+        .ml-2{
+            margin-left: 10px;
+        }
+        .row{
+            padding: 10px;
+            align-items: flex-start;
+        }
+        .label{
+            color: #999;
+            width: 100px;
+            text-align: right;
+        }
+        .img{
+            width: 129px;
+            height: 129px;
+            border-radius: 5px;
+            padding: 3px;
+            border: 1px solid var(--el-border-color-lighter);
+        }
+        a{
+            color: var(--el-color-primary);
+        }
+        .el-rate{
+            height: 21px;
+        }
+        .el-progress{
+            width: 200px;
+            height: 25px;
+        }
+        .apply{
+            position: fixed;
+            width: 80px;
+            height: 30px;
+            top: 20px;
+            right: 20px;
+            z-index: 99;
+        }
+        .el-select{
+            width: 100%;
+        }
+        .rowbut{
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-button class="apply" @click="drawer = true" type="primary">新增</el-button>
+        <el-drawer v-model="drawer">
+            <template #title>
+                <h4>添加/编辑项目</h4>
+            </template>
+            <template #default>
+                <el-form ref="form" :model="formData" label-width="80px">
+                    <el-form-item label="项目评级">
+                        <el-rate
+                            v-model="formData.start"
+                            :texts="['1', '2', '3', '4', '5']"
+                            show-text
+                        />
+                    </el-form-item>
+                    <el-form-item label="项目名称">
+                        <el-input v-model="formData.name" placeholder="请输入项目名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="项目类型">
+                        <el-select v-model="formData.label_id" placeholder="请选择项目类型">
+                            <el-option  v-for="(item,i) in labelList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="项目成员">
+                        <el-checkbox-group v-model="formData.user_id">
+                            <el-checkbox v-for="(item,i) in userList" :key="item.id" :label="item.id" name="type">{{ item.name }}</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item label="原型/设计">
+                        <el-input v-model="formData.prototypes" placeholder="请输入原型/设计" />
+                    </el-form-item>
+                    <el-form-item label="GIT地址">
+                        <el-input v-model="formData.git" placeholder="请输入git地址" />
+                    </el-form-item>
+                    <el-form-item label="项目备注">
+                        <el-input v-model="formData.note" type="textarea" placeholder="请输入项目备注" rows="5"></el-input>
+                    </el-form-item>
+                  </el-form>
+            </template>
+            <template #footer>
+                <div>
+                    <el-button @click="onClose">取消</el-button>
+                    <el-button type="primary" @click="submit">确定</el-button>
+                </div>
+            </template>
+        </el-drawer>
+
+        <el-drawer v-model="drawer2">
+            <template #title>
+                <h4>{{ item.name }}</h4>
+            </template>
+            <template #default>
+                <el-form ref="form" :model="formDatatwo" label-width="80px">
+                    <el-form-item label="环境名称">
+                        <el-input v-model="formDatatwo.label" placeholder="请输入环境名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="链接地址">
+                        <el-input v-model="formDatatwo.url" placeholder="请输入链接地址" />
+                    </el-form-item>
+                    <el-form-item label="二维码">
+                        <el-upload
+                        action="/api/upload"
+                        list-type="picture-card"
+                        limit="1"
+                        name="field"
+                        :on-success="handlePictureCardPreview"
+                        :on-remove="handleRemove">
+                        <i class="el-icon-plus"></i>
+                        </el-upload>
+                        <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="`./images/${formDatatwo.file}`" alt="">
+                        </el-dialog>
+                    </el-form-item>
+                  </el-form>
+            </template>
+            <template #footer>
+                <div>
+                    <el-button @click="onClosetwo">取消</el-button>
+                    <el-button type="primary" @click="submittwo">确定</el-button>
+                </div>
+            </template>
+        </el-drawer>
+         
+        <el-scrollbar class="scrollbar">
+            <div class="main">
+                <el-card class="box-card">
+                    <div class="title">
+                        <h4>开发工具导航</h4>
+                        <el-tag class="ml-2" type="danger">开发工具</el-tag>
+                    </div>
+                    <el-collapse>
+                        <el-collapse-item title="项目说明" name="1">
+                            <div class="row">
+                                <span class="label">项目评级：</span>
+                                <div>
+                                    <el-rate
+                                        v-model="value"
+                                        disabled
+                                        show-score
+                                        text-color="#be8808"
+                                        score-template="{value}">
+                                        </el-rate>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <span class="label">项目成员：</span>
+                                <div>
+                                    <el-tooltip  v-for="item in userList" :key="item.id" class="item" effect="dark" content="负责人" placement="top">
+                                        <el-tag class="ml-2" size="small" >{{ item.name }}</el-tag>
+                                    </el-tooltip>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <span class="label">Gitlab：</span>
+                                <a href="http://192.168.1.70:9998" target="_blank">http://192.168.1.70:9998</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">Jenkins：</span>
+                                <a href="http://192.168.1.70:9997" target="_blank">http://192.168.1.70:9997</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">禅道：</span>
+                                <a href="http://192.168.1.70:9999/zentao" target="_blank">http://192.168.1.70:9999/zentao</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">语雀文档：</span>
+                                <a href="https://cceg.yuque.com/cceg/project" target="_blank">https://cceg.yuque.com/cceg/project</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">备注：</span>
+                                <p>目前就这些</p>
+                            </div>
+                        </el-collapse-item>
+                      </el-collapse>
+                </el-card>
+
+                <el-card class="box-card" v-for="item in list" :key="item.id">
+                    <div class="title">
+                        <h4>{{ item.name }}</h4>
+                        <el-tag class="ml-2" :type="item.label_type">{{ item.label_name }}</el-tag>
+                    </div>
+                    <el-collapse>
+                        <el-collapse-item title="项目说明" name="1">
+                            <div class="row">
+                                <span class="label">项目评级：</span>
+                                <div>
+                                    <el-rate
+                                    v-model="item.start"
+                                    disabled
+                                    show-score
+                                    text-color="#be8808"
+                                    score-template="{value}">
+                                    </el-rate>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <span class="label">项目成员：</span>
+                                <div>
+                                    <el-tooltip  v-for="(tem,index) in item.userList" :key="index" class="item" effect="dark" content="负责人" placement="top">
+                                        <el-tag class="ml-2" size="small" >{{ tem }}</el-tag>
+                                    </el-tooltip>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <span class="label">原型/设计：</span>
+                                <a :href="item.prototypes" target="_blank">{{ item.prototypes }}</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">GIT地址：</span>
+                                <a :href="item.git" target="_blank">{{ item.git }}</a>
+                            </div>
+                            <div class="row">
+                                <span class="label">停/启维护：</span>
+                                <el-switch v-model="item.stop"></el-switch>
+                            </div>
+                            <div class="row">
+                                <span class="label">备注：</span>
+                                <p>{{ item.note }}</p>
+                            </div>
+                        </el-collapse-item>
+                        <el-collapse-item title="开发环境" name="2">
+                            <div v-for="tem in item.child" :key="tem.navid">
+                                <div class="row" v-if="tem.type == 0">
+                                    <span class="label">{{ tem.label }}：</span>
+                                    <template v-if="tem.url">
+                                        <a :href="tem.url" target="_blank">{{ tem.url }}</a>
+                                    </template>
+                                    <template v-if="tem.file">
+                                        <el-image
+                                        class="img"
+                                        :src="`./images/${tem.file}`"
+                                        fit="contain"
+                                        :preview-src-list="tem.srcList"></el-image>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="row rowbut">
+                                <el-button type="primary" size="small" @click="onOpen(item,0)">添加</el-button>
+                            </div>
+                        </el-collapse-item>
+                        <el-collapse-item title="测试环境" name="3">
+                            <div v-for="tem in item.child" :key="tem.navid">
+                                <div class="row" v-if="tem.type == 1">
+                                    <span class="label">{{ tem.label }}：</span>
+                                    <template v-if="tem.url">
+                                        <a :href="tem.url" target="_blank">{{ tem.url }}</a>
+                                    </template>
+                                    <template v-if="tem.file">
+                                        <el-image
+                                        class="img"
+                                        :src="`./images/${tem.file}`"
+                                        fit="contain"
+                                        :preview-src-list="tem.srcList"></el-image>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="row rowbut">
+                                <el-button type="primary" size="small" @click="onOpen(item,1)">添加</el-button>
+                            </div>
+                        </el-collapse-item>
+                        <el-collapse-item title="正式环境" name="4">
+                            <div v-for="tem in item.child" :key="tem.navid">
+                                <div class="row" v-if="tem.type == 2">
+                                    <span class="label">{{ tem.label }}：</span>
+                                    <template v-if="tem.url">
+                                        <a :href="tem.url" target="_blank">{{ tem.url }}</a>
+                                    </template>
+                                    <template v-if="tem.file">
+                                        <el-image
+                                        class="img"
+                                        :src="`./images/${tem.file}`"
+                                        fit="contain"
+                                        :preview-src-list="tem.srcList"></el-image>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="row rowbut">
+                                <el-button type="primary" size="small" @click="onOpen(item,2)">添加</el-button>
+                            </div>
+                        </el-collapse-item>
+                      </el-collapse>
+                </el-card>
+            </div>
+            
+        </el-scrollbar>
+    </div>
+    <script>
+        const App = {
+            data() {
+                return {
+                    drawer: false,
+                    drawer2: false,
+                    value: 5,
+                    srcList: ['https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg'],
+                    userList: [],
+                    labelList: [],
+                    list: [],
+                    item: {},
+                    formData: {
+                        label_id: 1,
+                        name: '',
+                        start: 5,
+                        user_id: [],
+                        prototypes: '',
+                        git: '',
+                        note: ''
+                    },
+
+                    formDatatwo: {
+                        item_id: 0,
+                        label: '',
+                        file: '',
+                        type: 0, // 0 开发 1 测试 2 正式 
+                        url: ''
+                    },
+
+                    dialogImageUrl: '',
+                    dialogVisible: false
+                }
+            },
+            created(){
+                this.getUser()
+                this.getLabel()
+                this.getlist()
+            },
+            methods: {
+                onOpen(item,type){
+                    this.item = item
+                    this.drawer2 = true
+                    this.formDatatwo.type = type
+                    this.formDatatwo.item_id = item.id
+                },
+                onClose(){
+                   this.drawer = !this.drawer
+                   this.formData = {
+                        label_id: 1,
+                        name: '',
+                        start: 5,
+                        user_id: [],
+                        prototypes: '',
+                        git: '',
+                        note: ''
+                    }
+                },
+                onClosetwo(){
+                    this.drawer2 = !this.drawer2
+                    this.formDatatwo = {
+                        item_id: 0,
+                        label: '',
+                        file: '',
+                        type: 0,
+                        url: ''
+                    }
+                },
+                getlist(){
+                    $.ajax({
+                        type: "GET",
+                        url:`/api/itemlist`,
+                        dataType: "json",
+                        success: (res) => {
+                            res.list.forEach(item => {
+                                item.stop = item.stop ? true : false
+                                item.userList = item.user_name.split(',') || []
+                                item.child.forEach(tem => {
+                                    if(tem.file){
+                                        tem.srcList = [`./images/${tem.file}`]
+                                    }
+                                })
+                                
+                            })
+                            this.list = res.list
+                        }
+                    })
+                },
+                getUser(){
+                    $.ajax({
+                        type: "GET",
+                        url:`/api/userlist`,
+                        dataType: "json",
+                        success: (res) => {
+                            this.userList = res.list
+                        }
+                    })
+                },
+                getLabel(){
+                    $.ajax({
+                        type: "GET",
+                        url:`/api/labellist`,
+                        dataType: "json",
+                        success: (res) => {
+                            this.labelList = res.list
+                        }
+                    })
+                },
+                handleRemove(file, fileList) {
+                    console.log(file, fileList);
+                },
+                handlePictureCardPreview({data}, file, fileList) {
+                    this.formDatatwo.file = `${data.src}`;
+                    this.dialogVisible = true;
+                },
+                submit(){
+                    if(!this.formData.name){
+                        this.$message('项目名称必填')
+                        return
+                    }
+                    this.formData.user_id = this.formData.user_id.toString()
+                    $.ajax({
+                        type: "POST",
+                        url:`/api/applyitem`,
+                        dataType: "json",
+                        data: this.formData,
+                        success: (res) => {
+                            if(res.code != 200){
+                                this.$message(`${res.msg}`)
+                                return
+                            }
+                           this.onClose()
+                           this.getlist()
+                        }
+                    });
+                },
+                submittwo(){
+                    if(!this.formDatatwo.label){
+                        this.$message('项目名称必填')
+                        return
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url:`/api/applynavigation`,
+                        dataType: "json",
+                        data: this.formDatatwo,
+                        success: (res) => {
+                            if(res.code != 200){
+                                this.$message(`${res.msg}`)
+                                return
+                            }
+                           this.onClosetwo()
+                           this.getlist()
+                        }
+                    });
+                }
+            }
+        }
+        const app = Vue.createApp(App)
+        app.use(ElementPlus)
+        app.mount("#app")
+    </script>
+</body>
+
+</html>
