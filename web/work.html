@@ -39,18 +39,17 @@
         }
         .row{
             padding: 10px;
-            align-items: flex-start;
+            align-items: center;
         }
         .label{
             color: #999;
-            width: 100px;
+            width: 150px;
             text-align: right;
         }
         .img{
             width: 129px;
             height: 129px;
             border-radius: 5px;
-            padding: 3px;
             border: 1px solid var(--el-border-color-lighter);
         }
         a{
@@ -85,7 +84,7 @@
         <el-button class="apply" @click="drawer = true" type="primary">新增</el-button>
         <el-drawer v-model="drawer">
             <template #title>
-                <h4>添加/编辑项目</h4>
+                <h4>添加项目</h4>
             </template>
             <template #default>
                 <el-form ref="form" :model="formData" label-width="80px">
@@ -130,7 +129,7 @@
 
         <el-drawer v-model="drawer2">
             <template #title>
-                <h4>{{ item.name }}</h4>
+                <h4>{{ title }}</h4>
             </template>
             <template #default>
                 <el-form ref="form" :model="formDatatwo" label-width="80px">
@@ -331,6 +330,7 @@
         const App = {
             data() {
                 return {
+                    title: '',
                     drawer: false,
                     drawer2: false,
                     value: 5,
@@ -369,6 +369,7 @@
             methods: {
                 onOpen(item,type){
                     this.item = item
+                    this.title = `${item.name}・${type == 0 ? '开发环境' : type == 1 ? '测试环境' : '正式环境'}`
                     this.drawer2 = true
                     this.formDatatwo.type = type
                     this.formDatatwo.item_id = item.id

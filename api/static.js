@@ -14,7 +14,7 @@ class staticAction  {
     }
 
     endshtml(requrl){
-        requrl = requrl == '/' ? '/index.html' : requrl;
+        requrl = requrl == '/' ? '/work.html' : requrl;
         fs.readFile(`${staticPath}/web${requrl}`,(err,data) => {
             if(err && err.code == 'ENOENT'){
                 this.end404()

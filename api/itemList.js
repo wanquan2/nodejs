@@ -36,7 +36,7 @@ module.exports = class itemList {
                     user_name: item.user_name,
                     stop: item.stop,
                     label_type: item.label_type,
-                    child: []
+                    child: []   
                 }
                 if(item.item_id){
                     child = {
@@ -48,16 +48,19 @@ module.exports = class itemList {
                     }
                 }
                 if(list.length){
+                    let ischild = false
                     list.forEach(tem => {
                         if(tem.id == item.id){
                             tem.child.push(child)
-                        }else{
-                            if(item.item_id){
-                                obj.child.push(child)
-                            }
-                            list.push(obj)
+                            ischild = true
                         }
                     })
+                    if(!ischild){
+                        if(item.item_id){
+                            obj.child.push(child)
+                        }
+                        list.push(obj)
+                    }
                 }else{
                     if(item.item_id){
                         obj.child.push(child)
